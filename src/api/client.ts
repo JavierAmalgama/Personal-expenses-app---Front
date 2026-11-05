@@ -23,9 +23,10 @@ async function request<T>(method: string, path: string, body?: object): Promise<
 
   if (!response.ok) {
     const json = await response.json().catch(() => null);
-    throw new ApiError(response.status, errorMessage(response.status, json?.response));
+    throw new ApiError(response.status, errorMessage(response.status, json?.error));
   }
 
+  if (response.status === 204) return undefined as T;
   return response.json();
 }
 
@@ -45,17 +46,15 @@ async function send(method: string, path: string, body?: object): Promise<Respon
   }
 }
 
-function errorMessage(status: number, error?: { error_name?: string; error_message?: unknown }) {
-  // Validation errors come as { field: ["message", ...] }
-  const details = error?.error_message;
-  if (details && typeof details === 'object') {
-    return Object.entries(details as Record<string, string[]>)
-      .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+type ErrorBody = { code?: string; message?: string; details?: Record<string, unknown> };
+
+function errorMessage(status: number, error?: ErrorBody) {
+  if (error?.code === 'validation_failed' && error.details) {
+    return Object.entries(error.details)
+      .map(([field, messages]) => `${field}: ${([] as unknown[]).concat(messages).join(', ')}`)
       .join('\n');
   }
-  if (typeof details === 'string') return details;
-
-  if (status === 401) return 'Falta el token (EXPO_PUBLIC_API_TOKEN)';
-  if (status === 403) return 'Token inválido o vencido';
+  if (status === 401 && !API_TOKEN) return 'Falta el token (EXPO_PUBLIC_API_TOKEN)';
+  if (error?.message) return error.message;
   return `Error ${status}`;
 }

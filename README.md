@@ -1,9 +1,9 @@
 # finances-front
 
 App Expo (Expo Router + TypeScript) para la herramienta de seguimiento de gastos personales.
-Corre en **web, iOS y Android** con el mismo código. Por ahora es mínima: una pantalla que
-verifica la conexión con `finances-back` (`GET /up`). Las pantallas se van sumando a medida
-que avanza la capacitación del back.
+Corre en **web, iOS y Android** con el mismo código. Muestra el resumen del mes (balance,
+gastos por categoría, últimos movimientos), la lista de movimientos con filtros y un formulario
+para cargar, editar y borrar. Usa `GET/POST/PATCH/DELETE /movements` y `GET /categories`.
 
 ## 1. Levantar el backend
 
@@ -40,10 +40,11 @@ npx tsc --noEmit
 
 ```
 src/
-  app/          pantallas (Expo Router: cada archivo es una ruta)
-  api/          cliente fetch (URL, token, errores de la API)
-  components/   StatusView (cargando / error + reintentar)
+  app/          pantallas (Expo Router): index (Inicio / Movimientos) y movement (alta / edición)
+  api/          cliente fetch, tipos y endpoints (movements, categories)
+  components/   UI base (ui.tsx), Kpi, HBar, MovementItem, Toast, StatusView
   hooks/        useFetch
+  utils/        formato de montos, fechas y medios de pago
   config.ts     URL de la API y token
-  theme.ts      colores
+  theme.ts      tokens de color (claro / oscuro), fuentes y makeStyles
 ```
